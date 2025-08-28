@@ -1,0 +1,33 @@
+name: Compile and Run edp.h tests
+on: [push, pull_request]
+
+jobs:
+  windows:
+    strategy:
+      matrix:
+        cc: [gcc, clang]
+        os: [windows-latest, windows-2022]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Compile edp tests
+        run: ${{ matrix.cc }} -O2 -std=c89 -pedantic -Wall -Wextra -Werror -Wvla -Wconversion -Wdouble-promotion -Wsign-conversion -Wuninitialized -Winit-self -Wunused -Wunused-macros -Wunused-local-typedefs -o edp_test_${{ matrix.cc }}.exe tests/edp_test.c
+      - name: Compile edp exe
+        run: ${{ matrix.cc }} -s -O2 -mconsole -march=native -mtune=native -std=c89 -pedantic -nodefaultlibs -nostdlib -mno-stack-arg-probe -Xlinker /STACK:0x100000,0x100000 -fno-builtin -ffreestanding -fno-asynchronous-unwind-tables -fuse-ld=lld -Wall -Wextra -Werror -Wvla -Wconversion -Wdouble-promotion -Wmissing-field-initializers -Wno-uninitialized -Winit-self -Wunused -Wunused-macros -Wunused-local-typedefs edp.c -o edp_${{ matrix.cc }}.exe -lkernel32      
+      - name: Run edp tests (no data appended yet)
+        run: .\edp_test_${{ matrix.cc }}.exe
+      - name: Run edp and append data to test exe
+        run: .\edp_${{ matrix.cc }}.exe edp_test_${{ matrix.cc }}.exe tests/perf.h
+      - name: Run edp tests (now data appended to executable should be visible)
+        run: .\edp_test_${{ matrix.cc }}.exe
+      - name: Upload test Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}-${{ matrix.cc }}-edp_test
+          path: edp_test_${{ matrix.cc }}.exe
+      - name: Upload edp executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}-${{ matrix.cc }}-edp
+          path: edp_${{ matrix.cc }}.exe
