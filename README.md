@@ -10,74 +10,123 @@ For more information please look at the "edp.h" file or take a look at the "exam
 > [!WARNING]
 > THIS PROJECT IS A WORK IN PROGRESS! ANYTHING CAN CHANGE AT ANY MOMENT WITHOUT ANY NOTICE! USE THIS PROJECT AT YOUR OWN RISK!
 
-## Quick Start
+<p align="center">
+  <a href="https://github.com/nickscha/edp/releases">
+    <img src="https://img.shields.io/github/v/release/nickscha/edp?style=flat-square&color=blue" alt="Latest Release">
+  </a>
+  <a href="https://github.com/nickscha/edp/releases">
+    <img src="https://img.shields.io/github/downloads/nickscha/edp/total?style=flat-square&color=brightgreen" alt="Downloads">
+  </a>
+  <a href="https://opensource.org/licenses/MIT">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="License">
+  </a>
+  <img src="https://img.shields.io/badge/Standard-C89-orange?style=flat-square" alt="C Standard">
+  <img src="https://img.shields.io/badge/nolib-nostdlib-lightgrey?style=flat-square" alt="nostdlib">
+</p>
 
-Download or clone edp.h && edp.c and include it in your project.
+<p align="center">
+  <b>EDP</b> lets you <b>append arbitrary data to an executable</b> and <b>access it at runtime</b>, 
+  all without relying on the C Standard Library.
+</p>
 
-The project contains two parts:
-- **edp.c**: This is the nostdlib standalone program that allow you to append data to an executable via **edp.exe myexecutable.exe my_data_file**
-- **edp.h**: This lets you load appended executable data during runtime via **edp_data_load**
+## **Features**
+- **C89 compliant** — portable and legacy-friendly  
+- **Single-header API** — just include `edp.h`  
+- **nostdlib** — no dependency on the C Standard Library  
+- **Minimal binary size** — optimized for small executables  
+- **Cross-platform** — Windows, Linux, and more (WIP)  
+- **Strict compilation** — built with aggressive warnings & safety checks  
 
+### **1. Get EDP**
+Clone the repository or download the standalone files:
 
-### Using the edp.c appender:
+```bash
+git clone https://github.com/nickscha/edp.git
+```
 
-This standlone nostdlib c89 program allows you to append data to an executable.
+The project consists of two main components:
 
-#### Compile the edp.c or download from github actions or run the "build.bat" in the tests folder.
+| File       | Purpose |
+|-----------|----------------------|
+| **edp.c** | Standalone nostdlib appender — append arbitrary data to an executable |
+| **edp.h** | Loader API — read the appended data directly at runtime |
 
-In this compilation we are extra strict about warning and treat everything as an error.
-Also we set here the required nostdlib compilation flags.
+---
 
-Clang/GCC:
+### **2. Building the Appender (`edp.c`)**
+
+The appender is **freestanding** and **nostdlib**. Compile using **Clang** or **GCC** with strict flags:
 
 ```bat
 set DEF_COMPILER_FLAGS=-mconsole -march=native -mtune=native -std=c89 -pedantic -nodefaultlibs -nostdlib -mno-stack-arg-probe -Xlinker /STACK:0x100000,0x100000 ^
 -fno-builtin -ffreestanding -fno-asynchronous-unwind-tables -fuse-ld=lld ^
--Wall -Wextra -Werror -Wvla -Wconversion -Wdouble-promotion -Wsign-conversion -Wuninitialized -Winit-self -Wunused -Wunused-function -Wunused-macros -Wunused-parameter -Wunused-value -Wunused-variable -Wunused-local-typedefs
+-Wall -Wextra -Werror -Wvla -Wconversion -Wdouble-promotion -Wsign-conversion -Wuninitialized -Winit-self ^
+-Wunused -Wunused-function -Wunused-macros -Wunused-parameter -Wunused-value -Wunused-variable -Wunused-local-typedefs
 
 set DEF_FLAGS_LINKER=-lkernel32
 cc -s -Os %DEF_COMPILER_FLAGS% edp.c -o edp.exe %DEF_FLAGS_LINKER%
 ```
 
-#### Run the edp.exe:
+Or download prebuilt binaries from  
+**[GitHub Actions → Latest Artifacts](https://github.com/nickscha/edp/actions)**.
 
-This will append the specified data file into the executable.
+---
 
-```sh
-edp.exe myexecutable.exe my_data_file
+### **3. Appending Data to an Executable**
+
+Once compiled, append arbitrary data:
+
+```bash
+edp.exe my_program.exe my_payload.bin
 ```
 
-### Using the edp.h loader:
+This appends `my_payload.bin` to the end of `my_program.exe`.  
+The data can then be accessed at runtime using `edp.h`.
 
-This header allows you to load the appended executable data.
+---
 
-```C
-#include "edp.h" /* Executable Data Packager */
+### **4. Loading Appended Data (`edp.h`)**
 
-int main() {
+Here’s how you load the embedded payload:
 
-    void *payload = (void *)0;
+```c
+#include "edp.h"  /* Executable Data Packager */
+
+int main(void) {
+    void *payload = 0;
     unsigned int payload_size = 0;
 
-    if (!edp_data_load(&payload, &payload_size))
-    {   
-        /* No data has been appended to the executable */
+    if (!edp_data_load(&payload, &payload_size)) {
+        /* No data was appended */
         return 1;
     }
 
-    /* Now you can use the payload and payload_size */
+    /* Use payload & payload_size here */
 
-    /* Free the executable payload */
+    /* Free memory after use */
     edp_data_free(payload);
 
     return 0;
 }
 ```
 
-## Run Example: nostdlib, freestsanding
+---
 
-In this repo you will find the "examples/edp_win32_nostdlib.c" with the corresponding "build.bat" file which
-creates an executable only linked to "kernel32" and is not using the C standard library and executes the program afterwards.
+## **Motivation**
+
+**EDP** exists to give developers a **minimalistic, reliable, and portable** solution for:
+- Embedding configuration, assets, or metadata inside executables  
+- Accessing that data without external files  
+- Operating **without the C Standard Library**  
+
+This approach is especially useful for:
+- Self-contained tools  
+- Licensing & authentication systems  
+- Bootloaders & embedded systems  
+- Portable cross-platform executables  
+- Assets
+
+---
 
 ## "nostdlib" Motivation & Purpose
 
