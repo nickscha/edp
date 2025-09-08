@@ -17,7 +17,7 @@ set DEF_FLAGS_LINKER=-lkernel32
 cc -s -Os %DEF_COMPILER_FLAGS% ../edp.c -o edp.exe %DEF_FLAGS_LINKER%
 
 REM Append a file to the test executable
-edp.exe %SOURCE_NAME%.exe perf.h
+edp.exe %SOURCE_NAME%.exe ../deps/perf.h
 
 REM Now when we run the executable it loads its own appended data and prints it
 edp_test.exe

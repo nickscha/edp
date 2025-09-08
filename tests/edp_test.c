@@ -32,7 +32,7 @@ int main(void)
   printf("[edp_test] data has been appended to executable!\n");
   printf("[edp_test] payload_size: %i\n", size);
 
-  assert(size == 16944);
+  assert(size == 30233);
 
   printf("[edp_test] payload:\n");
 

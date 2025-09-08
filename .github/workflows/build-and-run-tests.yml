@@ -18,7 +18,7 @@ jobs:
       - name: Run edp tests (no data appended yet)
         run: .\edp_test_${{ matrix.cc }}.exe
       - name: Run edp and append data to test exe
-        run: .\edp_${{ matrix.cc }}.exe edp_test_${{ matrix.cc }}.exe tests/perf.h
+        run: .\edp_${{ matrix.cc }}.exe edp_test_${{ matrix.cc }}.exe deps/perf.h
       - name: Run edp tests (now data appended to executable should be visible)
         run: .\edp_test_${{ matrix.cc }}.exe
       - name: Upload test Artifact
