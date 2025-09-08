@@ -10,10 +10,10 @@ LICENSE
   See end of file for detailed license information.
 
 */
-#include "../edp.h" /* Executable Data Packager    */
-#include "test.h"   /* Simple Testing Framework    */
-#include "perf.h"   /* Simple Performance profiler */
-#include "stdio.h"  /* Just for demonstration      */
+#include "../edp.h"       /* Executable Data Packager    */
+#include "../deps/test.h" /* Simple Testing Framework    */
+#include "../deps/perf.h" /* Simple Performance profiler */
+#include "stdio.h"        /* Just for demonstration      */
 
 int main(void)
 {

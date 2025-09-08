@@ -1,4 +1,4 @@
-/* test.h - v0.2 - public domain data structures - nickscha 2025
+/* test.h - v0.3 - public domain data structures - nickscha 2025
 
 A C89 standard compliant, single header, nostdlib (no C Standard Library) simple testing framework.
 
@@ -115,10 +115,7 @@ TEST_API TEST_INLINE void test_print_int(int val)
 
 #else
 
-#ifndef _UNISTD_H
-extern int write(int fd, void *buf, unsigned int count);
-#define STDOUT_FILENO 1
-#endif /* _UNISTD_H */
+#include <unistd.h>
 
 #define COLOR_DEFAULT 0
 #define COLOR_BLUE 0

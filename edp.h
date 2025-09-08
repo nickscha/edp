@@ -44,6 +44,7 @@ typedef struct edp_footer
  * Because windows.h is massivly bloated and increases compilation time a lot
  * we declare only the function we really need
  */
+#ifdef _WIN32
 #ifndef _WINDOWS_
 #define EDP_WIN32_API(r) __declspec(dllimport) r __stdcall
 
@@ -158,6 +159,82 @@ EDP_API EDP_INLINE void edp_data_free(void *p)
     VirtualFree(p, 0, MEM_RELEASE);
   }
 }
+#endif /* _WIN32 */
+
+/* #############################################################################
+ * # LINUX Implementation
+ * #############################################################################
+ */
+#ifdef __linux__
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+
+EDP_API EDP_INLINE int edp_data_load(void **out_data, unsigned int *out_size)
+{
+  char path[512];
+  int fd = -1;
+  struct stat st;
+  edp_footer footer;
+  ssize_t rd;
+
+  if (!out_data || !out_size)
+  {
+    return 0;
+  }
+
+  /* read executable path */
+  rd = readlink("/proc/self/exe", path, sizeof(path) - 1);
+  if (rd <= 0)
+  {
+    return 0;
+  }
+
+  path[rd] = 0;
+
+  fd = open(path, O_RDONLY);
+
+  if (fd < 0)
+  {
+    return 0;
+  }
+
+  if ((fstat(fd, &st) < 0 || st.st_size < sizeof(edp_footer)) ||
+      (lseek(fd, st.st_size - sizeof(edp_footer), SEEK_SET) < 0))
+  {
+    close(fd);
+    return 0;
+  }
+
+  rd = read(fd, &footer, sizeof(footer));
+
+  if (rd != sizeof(footer) ||
+      footer.magic[0] != 'E' || footer.magic[1] != 'D' || footer.magic[2] != 'P' ||
+      footer.magic[3] != 'v' || footer.magic[4] != '1' || footer.magic[5] != ' ' ||
+      footer.magic[6] != ' ' || footer.magic[7] != ' ' ||
+      footer.size > (unsigned int)(st.st_size - sizeof(edp_footer)))
+  {
+    close(fd);
+    return 0;
+  }
+
+  *out_size = footer.size;
+  *out_data = mmap(0, footer.size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, st.st_size - sizeof(edp_footer) - footer.size);
+
+  close(fd);
+
+  return *out_data != (void *)-1;
+}
+
+EDP_API EDP_INLINE void edp_data_free(void *p, unsigned int size)
+{
+  if (p)
+  {
+    munmap(p, size);
+  }
+}
+#endif /* __linux__ */
 
 #endif /* EDP_H */
 
