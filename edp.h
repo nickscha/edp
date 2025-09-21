@@ -18,17 +18,15 @@ LICENSE
 /* Check if using C99 or later (inline is supported) */
 #if __STDC_VERSION__ >= 199901L
 #define EDP_INLINE inline
-#define EDP_API static
 #elif defined(__GNUC__) || defined(__clang__)
 #define EDP_INLINE __inline__
-#define EDP_API static
 #elif defined(_MSC_VER)
 #define EDP_INLINE __inline
-#define EDP_API static
 #else
 #define EDP_INLINE
-#define EDP_API static
 #endif
+
+#define EDP_API static
 
 typedef struct edp_footer
 {
